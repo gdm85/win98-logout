@@ -37,7 +37,7 @@ func main() {
 	vpaned.Pack2(framebox2, false, false)
 
 	label := gtk.NewLabel("What do you want the computer to do?")
-	framebox2.PackStart(label, false, true, 0)
+	framebox2.PackStart(label, false, true, 16)
 
 	//--------------------------------------------------------
 	// GtkHBox
@@ -84,15 +84,7 @@ func main() {
 	})
 	buttons.Add(cancelButton)
 
-	framebox2.PackStart(buttons, false, false, 0)
-
-	buttons = gtk.NewHBox(false, 1)
-
-	//--------------------------------------------------------
-	// GtkVSeparator
-	//--------------------------------------------------------
-	vsep := gtk.NewVSeparator()
-	framebox2.PackStart(vsep, false, false, 0)
+	framebox2.PackStart(buttons, false, false, 20)
 
 	//--------------------------------------------------------
 	// Event
