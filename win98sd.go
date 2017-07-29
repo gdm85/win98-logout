@@ -4,19 +4,26 @@ import (
 	"fmt"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
+	"github.com/mattn/go-gtk/gdkpixbuf"
 	"os"
-	"path/filepath"
 )
+
+//go:generate sh -c "go run embedder/main.go iconPNG < icons/shut_down_normal.png > icon.gen.go"
 
 func main() {
 	gtk.Init(&os.Args)
+	
+	pb, err := gdkpixbuf.NewPixbufFromData(iconPNG)
+	if err != nil {
+		panic(err)
+	}
 
 	window := gtk.NewDialog()
 	window.SetPosition(gtk.WIN_POS_CENTER)
 	window.SetTitle("Shutdown Linux")
 	window.SetModal(true)
 	window.SetResizable(false)
-	window.SetIconName("gtk-dialog-info")
+	window.SetIcon(pb)
 	window.Connect("destroy", func(ctx *glib.CallbackContext) {
 		gtk.MainQuit()
 	}, nil)
@@ -37,7 +44,7 @@ func main() {
 	vpaned.Pack2(framebox2, false, false)
 
 	label := gtk.NewLabel("What do you want the computer to do?")
-	framebox2.PackStart(label, false, true, 16)
+	framebox2.PackStart(label, false, true, 18)
 
 	//--------------------------------------------------------
 	// GtkHBox
@@ -47,24 +54,23 @@ func main() {
 	//--------------------------------------------------------
 	// GtkImage
 	//--------------------------------------------------------
-	dir, _ := filepath.Split(os.Args[0])
-	imagefile := filepath.Join(dir, "icons/shut_down_normal.png")
-
-	image := gtk.NewImageFromFile(imagefile)
-	buttons.Add(image)
+	buttons.Add(gtk.NewImageFromPixbuf(pb))
 
 	//--------------------------------------------------------
 	// GtkRadioButton
 	//--------------------------------------------------------
 	buttonbox := gtk.NewVBox(false, 1)
-	radiofirst := gtk.NewRadioButtonWithLabel(nil, "Stand by")
-	buttonbox.Add(radiofirst)
-	sdButton := gtk.NewRadioButtonWithLabel(radiofirst.GetGroup(), "Shutdown")
-	buttonbox.Add(sdButton)
-	buttonbox.Add(gtk.NewRadioButtonWithLabel(radiofirst.GetGroup(), "Restart"))
-	buttonbox.Add(gtk.NewRadioButtonWithLabel(radiofirst.GetGroup(), "Switch to a VT"))
+	standBy := gtk.NewRadioButtonWithLabel(nil, "Stand by")
+	buttonbox.Add(standBy)
+	shutdown := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Shutdown")
+	buttonbox.Add(shutdown)
+	restart := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Restart")
+	buttonbox.Add(restart)
+	vtSwitch := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Switch to a VT")
+	buttonbox.Add(vtSwitch)
+	
 	buttons.Add(buttonbox)
-	sdButton.SetActive(true)
+	shutdown.SetActive(true)
 
 	framebox2.PackStart(buttons, false, false, 0)
 
@@ -74,13 +80,23 @@ func main() {
 	//--------------------------------------------------------
 	okButton := gtk.NewButtonWithLabel("OK")
 	okButton.Clicked(func() {
-		fmt.Println("OK clicked:", okButton.GetLabel())
+		var obj gtk.ILabel
+		if standBy.GetActive() {
+			obj = standBy
+		} else if shutdown.GetActive() {
+			obj = shutdown
+		} else if restart.GetActive() {
+			obj = restart
+		} else if vtSwitch.GetActive() {
+			obj = vtSwitch
+		}
+		fmt.Println("selected:", obj.GetLabel())
 	})
 	buttons.Add(okButton)
 
 	cancelButton := gtk.NewButtonWithLabel("Cancel")
 	cancelButton.Clicked(func() {
-		fmt.Println("cancel clicked:", cancelButton.GetLabel())
+		window.Destroy()
 	})
 	buttons.Add(cancelButton)
 
