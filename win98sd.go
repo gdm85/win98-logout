@@ -13,9 +13,9 @@ import (
 //go:generate sh -c "go run embedder/make_inline_pixbuf.go iconPNG icons/shut_down_normal.png > icon.gen.go"
 
 const (
-	standbyAction = ``
+	standbyAction  = ``
 	shutdownAction = `sudo shutdown -h now`
-	restartAction = `sudo reboot`
+	restartAction  = `sudo reboot`
 	switchVTAction = `xdotool key ctrl+alt+F1`
 )
 
@@ -26,8 +26,6 @@ func main() {
 	if pb.GetWidth() == -1 {
 		panic("invalid embedded pixbuf")
 	}
-
-	fmt.Printf("size %vx%v\n", pb.GetWidth(), pb.GetHeight())
 
 	window := gtk.NewDialog()
 	window.SetPosition(gtk.WIN_POS_CENTER)
@@ -41,21 +39,8 @@ func main() {
 
 	vbox := window.GetVBox()
 
-	//--------------------------------------------------------
-	// GtkVPaned
-	//--------------------------------------------------------
-	vpaned := gtk.NewVPaned()
-	vbox.Add(vpaned)
-
-	//--------------------------------------------------------
-	// GtkFrame
-	//--------------------------------------------------------
-	framebox2 := gtk.NewVBox(false, 1)
-
-	vpaned.Pack2(framebox2, false, false)
-
 	label := gtk.NewLabel("What do you want the computer to do?")
-	framebox2.PackStart(label, false, true, 18)
+	vbox.PackStart(label, false, true, 18)
 
 	//--------------------------------------------------------
 	// GtkHBox
@@ -86,7 +71,7 @@ func main() {
 	buttons.Add(buttonbox)
 	shutdown.SetActive(true)
 
-	framebox2.PackStart(buttons, false, false, 0)
+	vbox.PackStart(buttons, false, false, 0)
 
 	buttons = gtk.NewHBox(false, 1)
 	//--------------------------------------------------------
@@ -115,7 +100,7 @@ func main() {
 	})
 	buttons.Add(cancelButton)
 
-	framebox2.PackStart(buttons, false, false, 20)
+	vbox.PackStart(buttons, false, false, 20)
 
 	//--------------------------------------------------------
 	// Event
