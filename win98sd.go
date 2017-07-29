@@ -40,15 +40,21 @@ func main() {
 
 	vbox := dlg.GetVBox()
 
+	vpaned := gtk.NewVPaned()
+	vbox.Add(vpaned)
+
+	framebox2 := gtk.NewVBox(false, 1)
+
+	vpaned.Pack2(framebox2, false, false)
+
+	label := gtk.NewLabel("What do you want the computer to do?")
+	framebox2.PackStart(label, false, true, 18)
+
 	hbox := gtk.NewHBox(false, 1)
+
 	hbox.Add(gtk.NewImageFromPixbuf(pb))
 
-	//--------------------------------------------------------
-	// GtkRadioButton
-	//--------------------------------------------------------
 	buttonbox := gtk.NewVBox(false, 1)
-	label := gtk.NewLabel("What do you want the computer to do?")
-	buttonbox.PackStart(label, false, true, 18)
 	standBy := gtk.NewRadioButtonWithLabel(nil, "Stand by")
 	if standbyAction == `` {
 		standBy.SetSensitive(false)
@@ -65,12 +71,10 @@ func main() {
 	shutdown.SetActive(true)
 
 	// add to layout
-	vbox.PackStart(hbox, false, false, 0)
+	framebox2.PackStart(hbox, false, false, 0)
 
-	///
-	/// generate OK & Cancel buttons
-	///
 	hbox = gtk.NewHBox(false, 1)
+
 	okButton := gtk.NewButtonWithLabel("OK")
 	okButton.Clicked(func() {
 		if standBy.GetActive() {
@@ -95,7 +99,7 @@ func main() {
 	hbox.Add(cancelButton)
 
 	// add to layout
-	vbox.PackStart(hbox, false, false, 20)
+	framebox2.PackStart(hbox, false, false, 20)
 
 	// initialize & display
 	dlg.SetSizeRequest(350, 200)
