@@ -115,7 +115,7 @@ func activate(s string) {
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: could not run: %v\n", err)
+		fmt.Fprintf(os.Stderr, "ERROR: could not run %q: %v\n", s, err)
 		os.Exit(1)
 	}
 }
