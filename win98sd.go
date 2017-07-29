@@ -24,30 +24,24 @@ func main() {
 
 	pb := gdkpixbuf.NewPixbufFromData(iconPNG)
 	if pb.GetWidth() == -1 {
-		panic("invalid embedded pixbuf")
+		fmt.Fprintf(os.Stderr, "ERROR: invalid embedded pixbuf\n")
+		os.Exit(1)
 	}
 
-	window := gtk.NewDialog()
-	window.SetPosition(gtk.WIN_POS_CENTER)
-	window.SetTitle("Shutdown Linux")
-	window.SetModal(true)
-	window.SetResizable(false)
-	window.SetIcon(pb)
-	window.Connect("destroy", func(ctx *glib.CallbackContext) {
+	dlg := gtk.NewDialog()
+	dlg.SetPosition(gtk.WIN_POS_CENTER)
+	dlg.SetTitle("Shutdown Linux")
+	dlg.SetModal(true)
+	dlg.SetResizable(false)
+	dlg.SetIcon(pb)
+	dlg.Connect("destroy", func(ctx *glib.CallbackContext) {
 		gtk.MainQuit()
 	}, nil)
 
-	vbox := window.GetVBox()
+	vbox := dlg.GetVBox()
 
-	//--------------------------------------------------------
-	// GtkHBox
-	//--------------------------------------------------------
-	buttons := gtk.NewHBox(false, 1)
-
-	//--------------------------------------------------------
-	// GtkImage
-	//--------------------------------------------------------
-	buttons.Add(gtk.NewImageFromPixbuf(pb))
+	hbox := gtk.NewHBox(false, 1)
+	hbox.Add(gtk.NewImageFromPixbuf(pb))
 
 	//--------------------------------------------------------
 	// GtkRadioButton
@@ -67,15 +61,16 @@ func main() {
 	vtSwitch := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Switch to a VT")
 	buttonbox.Add(vtSwitch)
 
-	buttons.Add(buttonbox)
+	hbox.Add(buttonbox)
 	shutdown.SetActive(true)
 
-	vbox.PackStart(buttons, false, false, 0)
+	// add to layout
+	vbox.PackStart(hbox, false, false, 0)
 
-	buttons = gtk.NewHBox(false, 1)
-	//--------------------------------------------------------
-	// GtkButton
-	//--------------------------------------------------------
+	///
+	/// generate OK & Cancel buttons
+	///
+	hbox = gtk.NewHBox(false, 1)
 	okButton := gtk.NewButtonWithLabel("OK")
 	okButton.Clicked(func() {
 		if standBy.GetActive() {
@@ -87,25 +82,24 @@ func main() {
 		} else if vtSwitch.GetActive() {
 			activate(switchVTAction)
 		}
-		window.Destroy()
+		dlg.Destroy()
 	})
 	okButton.SetCanDefault(true)
-	window.SetDefault(&okButton.Widget)
-	buttons.Add(okButton)
+	dlg.SetDefault(&okButton.Widget)
+	hbox.Add(okButton)
 
 	cancelButton := gtk.NewButtonWithLabel("Cancel")
 	cancelButton.Clicked(func() {
-		window.Destroy()
+		dlg.Destroy()
 	})
-	buttons.Add(cancelButton)
+	hbox.Add(cancelButton)
 
-	vbox.PackStart(buttons, false, false, 20)
+	// add to layout
+	vbox.PackStart(hbox, false, false, 20)
 
-	//--------------------------------------------------------
-	// Event
-	//--------------------------------------------------------
-	window.SetSizeRequest(350, 200)
-	window.ShowAll()
+	// initialize & display
+	dlg.SetSizeRequest(350, 200)
+	dlg.ShowAll()
 	gtk.Main()
 }
 
