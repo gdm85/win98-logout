@@ -10,7 +10,7 @@ import (
 
 func main() {
 	if len(os.Args) != 3 {
-		fmt.Fprintf(os.Stderr, "Usage: embedder resourceName input > output\n")
+		fmt.Fprintf(os.Stderr, "Usage: make-inline-pixbuf resourceName input > output\n")
 		os.Exit(1)
 	}
 
