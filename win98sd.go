@@ -2,13 +2,22 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+
 	"github.com/mattn/go-gtk/gdkpixbuf"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
-	"os"
 )
 
 //go:generate sh -c "go run embedder/make_inline_pixbuf.go iconPNG icons/shut_down_normal.png > icon.gen.go"
+
+const (
+	standbyAction = ``
+	shutdownAction = `sudo poweroff`
+	restartAction = `sudo reboot`
+	switchVTAction = `xdotool key ctrl+alt+F1`
+)
 
 func main() {
 	gtk.Init(&os.Args)
@@ -63,6 +72,9 @@ func main() {
 	//--------------------------------------------------------
 	buttonbox := gtk.NewVBox(false, 1)
 	standBy := gtk.NewRadioButtonWithLabel(nil, "Stand by")
+	if standbyAction == `` {
+		standBy.SetSensitive(false)
+	}
 	buttonbox.Add(standBy)
 	shutdown := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Shutdown")
 	buttonbox.Add(shutdown)
@@ -82,17 +94,16 @@ func main() {
 	//--------------------------------------------------------
 	okButton := gtk.NewButtonWithLabel("OK")
 	okButton.Clicked(func() {
-		var obj gtk.ILabel
 		if standBy.GetActive() {
-			obj = standBy
+			activate(standbyAction)
 		} else if shutdown.GetActive() {
-			obj = shutdown
+			activate(shutdownAction)
 		} else if restart.GetActive() {
-			obj = restart
+			activate(restartAction)
 		} else if vtSwitch.GetActive() {
-			obj = vtSwitch
+			activate(switchVTAction)
 		}
-		fmt.Println("selected:", obj.GetLabel())
+		window.Destroy()
 	})
 	okButton.SetCanDefault(true)
 	window.SetDefault(&okButton.Widget)
@@ -112,4 +123,15 @@ func main() {
 	window.SetSizeRequest(350, 200)
 	window.ShowAll()
 	gtk.Main()
+}
+
+func activate(s string) {
+	cmd := exec.Command("sh", "-c", s)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: could not run: %v\n", err)
+		os.Exit(1)
+	}
 }
