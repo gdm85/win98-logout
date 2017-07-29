@@ -14,7 +14,7 @@ import (
 
 const (
 	standbyAction = ``
-	shutdownAction = `sudo poweroff`
+	shutdownAction = `sudo shutdown -h now`
 	restartAction = `sudo reboot`
 	switchVTAction = `xdotool key ctrl+alt+F1`
 )
