@@ -1,3 +1,6 @@
 [submodule "vendor/github.com/mattn/go-gtk"]
 	path = vendor/github.com/mattn/go-gtk
 	url = https://github.com/gdm85/go-gtk
+[submodule "vendor/github.com/mattn/go-pointer"]
+	path = vendor/github.com/mattn/go-pointer
+	url = https://github.com/mattn/go-pointer
