@@ -2,21 +2,23 @@ package main
 
 import (
 	"fmt"
+	"github.com/mattn/go-gtk/gdkpixbuf"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
-	"github.com/mattn/go-gtk/gdkpixbuf"
 	"os"
 )
 
-//go:generate sh -c "go run embedder/main.go iconPNG < icons/shut_down_normal.png > icon.gen.go"
+//go:generate sh -c "go run embedder/make_inline_pixbuf.go iconPNG icons/shut_down_normal.png > icon.gen.go"
 
 func main() {
 	gtk.Init(&os.Args)
-	
-	pb, err := gdkpixbuf.NewPixbufFromData(iconPNG)
-	if err != nil {
-		panic(err)
+
+	pb := gdkpixbuf.NewPixbufFromData(iconPNG)
+	if pb.GetWidth() == -1 {
+		panic("invalid embedded pixbuf")
 	}
+
+	fmt.Printf("size %vx%v\n", pb.GetWidth(), pb.GetHeight())
 
 	window := gtk.NewDialog()
 	window.SetPosition(gtk.WIN_POS_CENTER)
@@ -68,7 +70,7 @@ func main() {
 	buttonbox.Add(restart)
 	vtSwitch := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Switch to a VT")
 	buttonbox.Add(vtSwitch)
-	
+
 	buttons.Add(buttonbox)
 	shutdown.SetActive(true)
 
