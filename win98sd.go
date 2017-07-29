@@ -10,7 +10,7 @@ import (
 	"github.com/mattn/go-gtk/gtk"
 )
 
-//go:generate sh -c "go run embedder/make_inline_pixbuf.go iconPNG icons/shut_down_normal.png > icon.gen.go"
+//go:generate sh -c "go run embedder/make_inline_pixbuf.go iconPNG icons/shutdown.png > icon.gen.go"
 
 const (
 	standbyAction  = ``
@@ -39,9 +39,6 @@ func main() {
 
 	vbox := window.GetVBox()
 
-	label := gtk.NewLabel("What do you want the computer to do?")
-	vbox.PackStart(label, false, true, 18)
-
 	//--------------------------------------------------------
 	// GtkHBox
 	//--------------------------------------------------------
@@ -56,6 +53,8 @@ func main() {
 	// GtkRadioButton
 	//--------------------------------------------------------
 	buttonbox := gtk.NewVBox(false, 1)
+	label := gtk.NewLabel("What do you want the computer to do?")
+	buttonbox.PackStart(label, false, true, 18)
 	standBy := gtk.NewRadioButtonWithLabel(nil, "Stand by")
 	if standbyAction == `` {
 		standBy.SetSensitive(false)
