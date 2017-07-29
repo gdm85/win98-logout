@@ -94,6 +94,8 @@ func main() {
 		}
 		fmt.Println("selected:", obj.GetLabel())
 	})
+	okButton.SetCanDefault(true)
+	window.SetDefault(&okButton.Widget)
 	buttons.Add(okButton)
 
 	cancelButton := gtk.NewButtonWithLabel("Cancel")
