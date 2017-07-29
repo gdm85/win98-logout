@@ -1,0 +1,3 @@
+[submodule "vendor/github.com/mattn/go-gtk"]
+	path = vendor/github.com/mattn/go-gtk
+	url = https://github.com/gdm85/go-gtk
