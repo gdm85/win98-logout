@@ -1,8 +1,9 @@
 all: build
 
 build:
+	@mkdir -p bin/
 	@rm -f *.gen.go
 	go generate
-	go install .
+	GOBIN="$(CURDIR)/bin" go install -ldflags="-s -w" .
 
 .PHONY: all build
