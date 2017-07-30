@@ -108,6 +108,12 @@ func main() {
 
 	hbox = gtk.NewHBox(false, 1)
 
+	cancelButton := gtk.NewButtonWithLabel("Cancel")
+	cancelButton.Clicked(func() {
+		dlg.Destroy()
+	})
+	hbox.Add(cancelButton)
+
 	okButton := gtk.NewButtonWithLabel("OK")
 	okButton.Clicked(func() {
 		var activeButtonLabel string
@@ -132,12 +138,6 @@ func main() {
 	okButton.SetCanDefault(true)
 	dlg.SetDefault(&okButton.Widget)
 	hbox.Add(okButton)
-
-	cancelButton := gtk.NewButtonWithLabel("Cancel")
-	cancelButton.Clicked(func() {
-		dlg.Destroy()
-	})
-	hbox.Add(cancelButton)
 
 	// add to layout
 	framebox2.PackStart(hbox, false, false, 20)
