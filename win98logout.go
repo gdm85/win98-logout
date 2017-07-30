@@ -27,7 +27,7 @@ import (
 	"github.com/mattn/go-gtk/gtk"
 )
 
-//go:generate sh -c "go run embedder/make_inline_pixbuf.go iconPNG icons/shutdown.png > icon.gen.go"
+//go:generate sh -c "go run vendor/github.com/mattn/go-gtk/tools/make_inline_pixbuf/make_inline_pixbuf.go iconPNG icons/shutdown.png > icon.gen.go"
 
 const (
 	standbyAction  = ``
