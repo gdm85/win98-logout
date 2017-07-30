@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
+	"unsafe"
 
 	"github.com/mattn/go-gtk/gdkpixbuf"
 	"github.com/mattn/go-gtk/glib"
@@ -29,14 +31,19 @@ import (
 
 //go:generate sh -c "go run vendor/github.com/mattn/go-gtk/tools/make_inline_pixbuf/make_inline_pixbuf.go iconPNG icons/shutdown.png > icon.gen.go"
 
-const (
-	standbyAction  = ``
-	shutdownAction = `sudo shutdown -h now`
-	restartAction  = `sudo reboot`
-	switchVTAction = `xdotool key ctrl+alt+F1`
-)
-
 func main() {
+	usr, err := user.Current()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: could not get current user: %v\n", err)
+		os.Exit(1)
+	}
+
+	options, err := loadConfig(usr.HomeDir + `/.config/win98logout/win98logout.ini`)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: could not read configuration: %v\n", err)
+		os.Exit(1)
+	}
+
 	gtk.Init(&os.Args)
 
 	pb := gdkpixbuf.NewPixbufFromData(iconPNG)
@@ -72,20 +79,29 @@ func main() {
 	hbox.Add(gtk.NewImageFromPixbuf(pb))
 
 	buttonbox := gtk.NewVBox(false, 1)
-	standBy := gtk.NewRadioButtonWithLabel(nil, "Stand by")
-	if standbyAction == `` {
-		standBy.SetSensitive(false)
+	var first *gtk.RadioButton
+	var foundActive bool
+	for _, lo := range options {
+		var g *glib.SList
+		if first != nil {
+			g = first.GetGroup()
+		}
+		btn := gtk.NewRadioButtonWithLabel(g, lo.Label)
+		if len(lo.Command) == 0 {
+			btn.SetSensitive(false)
+		} else {
+			if !foundActive {
+				btn.SetActive(true)
+				foundActive = true
+			}
+		}
+		buttonbox.Add(btn)
+		if first == nil {
+			first = btn
+		}
 	}
-	buttonbox.Add(standBy)
-	shutdown := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Shutdown")
-	buttonbox.Add(shutdown)
-	restart := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Restart")
-	buttonbox.Add(restart)
-	vtSwitch := gtk.NewRadioButtonWithLabel(standBy.GetGroup(), "Switch to a VT")
-	buttonbox.Add(vtSwitch)
 
 	hbox.Add(buttonbox)
-	shutdown.SetActive(true)
 
 	// add to layout
 	framebox2.PackStart(hbox, false, false, 0)
@@ -94,15 +110,23 @@ func main() {
 
 	okButton := gtk.NewButtonWithLabel("OK")
 	okButton.Clicked(func() {
-		if standBy.GetActive() {
-			activate(standbyAction)
-		} else if shutdown.GetActive() {
-			activate(shutdownAction)
-		} else if restart.GetActive() {
-			activate(restartAction)
-		} else if vtSwitch.GetActive() {
-			activate(switchVTAction)
+		var activeButtonLabel string
+
+		// scan through all buttons to find the active one
+		first.GetGroup().ForEach(func(data unsafe.Pointer, user_data interface{}) {
+			var rb gtk.RadioButton
+			rb.GWidget = gtk.AS_GWIDGET(data)
+			if rb.GetActive() {
+				activeButtonLabel = rb.GetLabel()
+			}
+		})
+
+		for _, lo := range options {
+			if lo.Label == activeButtonLabel {
+				activate(lo.Command)
+			}
 		}
+
 		dlg.Destroy()
 	})
 	okButton.SetCanDefault(true)
